@@ -5,9 +5,9 @@ import { AppService } from './app.service';
 export class AppController {
     constructor(private readonly appService: AppService) { }
 
-    @Get("fetchTrips") // TODO: Just for testing
+    @Get("fetch-trips") // TODO: Just for testing
     async fetchTrips() {
-        return await this.appService.fetchAllTrips()
+        return this.appService.getAllTrips()
     }
 
 }

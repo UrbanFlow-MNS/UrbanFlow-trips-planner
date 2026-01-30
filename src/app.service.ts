@@ -1,18 +1,21 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
-import { firstValueFrom } from 'rxjs';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { ClientGrpc } from '@nestjs/microservices';
+import { TripService, TripsList } from 'interfaces/proto.interface';
+import { map } from 'rxjs';
 
 @Injectable()
-export class AppService {
+export class AppService implements OnModuleInit {
+    private tripService: TripService
 
-    constructor(
-        @Inject('TRIP_SERVICE') private readonly client: ClientProxy
-    ) { }
+    constructor(@Inject('TRIP_SERVICE') private readonly client: ClientGrpc) { }
 
-    async fetchAllTrips() {
-        return await firstValueFrom(
-            this.client.send({ cmd: 'trips-planner.requestTrips'}, { })
-        )
+    onModuleInit() {
+        this.tripService = this.client.getService<TripService>('TripService');
     }
-    
+
+    getAllTrips() {
+        return this.tripService.findAll({}).pipe(
+            map((response: TripsList) => response.trips)
+        );
+    }
 }
