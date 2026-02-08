@@ -1,21 +1,26 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
-import { TripService, TripsList } from 'interfaces/proto.interface';
-import { map } from 'rxjs';
+import { AllCompleteRoute, CompleteRoute } from 'interfaces/proto.interface';
+import { map, Observable } from 'rxjs';
+
+interface TripperService {
+  findAll(data: {}): Observable<AllCompleteRoute>;
+  findById(data: { id: number }): Observable<CompleteRoute>;
+}
 
 @Injectable()
 export class AppService implements OnModuleInit {
-    private tripService: TripService
+    private tripperService: TripperService;
 
     constructor(@Inject('TRIP_SERVICE') private readonly client: ClientGrpc) { }
 
     onModuleInit() {
-        this.tripService = this.client.getService<TripService>('TripService');
+        this.tripperService = this.client.getService<TripperService>('Tripper');
     }
 
     getAllTrips() {
-        return this.tripService.findAll({}).pipe(
-            map((response: TripsList) => response.trips)
+        return this.tripperService.findAll({}).pipe(
+            map((response: AllCompleteRoute) => response.routes)
         );
     }
 }
