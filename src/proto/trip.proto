@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package trip;
+
+service Tripper {
+  rpc FindById (RouteRequest) returns (CompleteRoute);
+  rpc FindAll (Empty) returns (AllCompleteRoute);
+}
+
+// Les Requests 
+message Empty{}
+
+message RouteRequest {
+  int32 id = 1;
+}
+
+
+
+// Les Responses
+message AllCompleteRoute {
+  repeated CompleteRoute routes = 1;
+}
+
+message CompleteRoute {
+  int32 route_id = 1;
+  string route_short_name = 2;
+  string route_long_name = 3;
+  string route_type_name = 4;
+  repeated TripDetails trips = 5;
+}
+
+message TripDetails {
+  int32 trip_id = 1;
+  repeated StopDetails stops = 2;
+}
+
+message StopDetails {
+  int32 stop_id = 1;
+  string stop_name = 2;
+  double longitude = 3;
+  double latitude = 4;
+  string arrival_time = 5;  // Format: "HH:mm:ss"
+  int32 sequence_order = 6;
+}
