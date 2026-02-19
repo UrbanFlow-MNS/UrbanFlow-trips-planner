@@ -1,0 +1,6 @@
+@UrbanFlow_trips_planner_HostAddress = http://localhost:5068
+
+GET {{UrbanFlow_trips_planner_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
