@@ -1,31 +1,26 @@
 using UrbanFlow_trips_planner.API.GrpcServices;
 
-namespace UrbanFlow_trips_planner;
+var builder = WebApplication.CreateBuilder(args);
 
-public class Program
-{
-    public static void Main(string[] args)
-    {
-        var builder = WebApplication.CreateBuilder(args);
+// Add services to the container.
+builder.Services.AddAuthorization();
+builder.Services.AddControllers();
+builder.Services.AddGrpc();
 
-        // Add services to the container.
-        builder.Services.AddAuthorization();
-        builder.Services.AddControllers();
-        builder.Services.AddGrpc();
+var app = builder.Build();
         
-        var app = builder.Build();
-        
-        app.MapGrpcService<GreeterService>();
-        // juste pour tester le greeter
-        app.MapGet("/",
-            () =>
-                "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
+app.MapGrpcService<GreeterService>();
+
+// juste pour tester le greeter
+app.MapGet("/",
+    () =>
+        "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
 
 
-        app.UseHttpsRedirection();
-        app.UseAuthorization();
-        app.MapControllers();
+app.UseHttpsRedirection();
+app.UseAuthorization();
+app.MapControllers();
         
-        app.Run();
-    }
-}
+app.Run();
+
+//namespace UrbanFlow_trips_planner;

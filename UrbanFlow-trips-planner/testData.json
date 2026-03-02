@@ -1,0 +1,39 @@
+﻿[
+  {
+    "routeId": 1,
+    "routeShortName": "Mettis B",
+    "routeLongName": "Mercy -> Saulcy",
+    "routeTypeName": "1",
+    "trips": [
+      {
+        "tripId": 1,
+        "stops": [
+          {
+            "stopId": 1,
+            "stopName": "Gare",
+            "longitude": 6.1687997,
+            "latitude": 49.1106807,
+            "arrivalTime": "16:00",
+            "sequenceOrder": 1
+          },
+          {
+            "stopId": 2,
+            "stopName": "Gare",
+            "longitude": 6.1687997,
+            "latitude": 49.1106807,
+            "arrivalTime": "17:00",
+            "sequenceOrder": 2
+          },
+          {
+            "stopId": 3,
+            "stopName": "Gare",
+            "longitude": 6.1687997,
+            "latitude": 49.1106807,
+            "arrivalTime": "18:00",
+            "sequenceOrder": 3
+          }
+        ]
+      }
+    ]
+  }
+]
