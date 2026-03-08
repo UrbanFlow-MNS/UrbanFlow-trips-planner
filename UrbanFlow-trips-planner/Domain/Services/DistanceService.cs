@@ -1,8 +1,8 @@
 ﻿namespace UrbanFlow_trips_planner.Domain.Services;
 
-public class DistanceService : IDistanceService
+public static class DistanceService
 {
-    public static double CalculateDistance(
+    public static double GetDistanceInMeters(
         double startLat, double startLong, 
         double finalLat, double finalLong)
     {
