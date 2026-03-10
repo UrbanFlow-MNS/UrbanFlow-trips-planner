@@ -7,21 +7,16 @@ namespace UrbanFlow_trips_planner.API.GrpcServices;
 
 public class PathfinderService : IPathfinderService
 {
-    public Task<List<TripEntity>> GetTrips()
+    private readonly ITripProvider _tripProvider;
+    public PathfinderService(ITripProvider tripProvider)
     {
-        throw new NotImplementedException();
-    }
-
-    public Task<List<TripEntity>> GetTripsBasedOnDistanceFromStartPosAndEndPos(float startLong, float startLat,
-        float endLong, float endLat)
-    {
-        throw new NotImplementedException();
+        _tripProvider = tripProvider;
     }
     
     public async Task<List<TripMatchResult>> GetFastestRoutes( float startLong, float startLat, float endLong, float endLat, IWalkingRoutingService routingService)
     {
-        List<TripEntity> trips = new();
-    
+        List<TripEntity> trips = await _tripProvider.GetTripsAsync();
+        
         var allUniqueStops = trips
             .SelectMany(t => t.Stops)
             .DistinctBy(s => new { s.Latitude, s.Longitude })

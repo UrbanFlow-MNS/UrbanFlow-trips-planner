@@ -5,11 +5,6 @@ namespace UrbanFlow_trips_planner.Domain.Interfaces;
 
 public interface IPathfinderService
 {
-    public Task<List<TripEntity>> GetTrips();
-
-    public Task<List<TripEntity>> GetTripsBasedOnDistanceFromStartPosAndEndPos(float startLong, float startLat,
-        float endLong, float endLat);
-
     public Task<List<TripMatchResult>> GetFastestRoutes(float startLong, float startLat, float endLong, float endLat,
         IWalkingRoutingService routingService);
 }

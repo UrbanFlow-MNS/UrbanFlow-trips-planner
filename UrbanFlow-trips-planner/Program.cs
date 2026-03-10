@@ -1,5 +1,6 @@
 using DotNetEnv;
 using UrbanFlow_trips_planner.API.GrpcServices;
+using UrbanFlow_trips_planner.Domain.Interfaces;
 using UrbanFlow_trips_planner.Domain.Services;
 
 Env.Load();
