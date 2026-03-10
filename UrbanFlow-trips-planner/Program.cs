@@ -1,4 +1,8 @@
+using DotNetEnv;
 using UrbanFlow_trips_planner.API.GrpcServices;
+using UrbanFlow_trips_planner.Domain.Services;
+
+Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +13,7 @@ builder.Services.AddGrpc();
 
 var app = builder.Build();
         
+builder.Services.AddHttpClient<IWalkingRoutingService, OsrmRoutingService>();
 app.MapGrpcService<GreeterService>();
 
 // juste pour tester le greeter

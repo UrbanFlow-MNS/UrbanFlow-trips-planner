@@ -13,7 +13,7 @@
             "stopName": "Gare",
             "longitude": 6.1687997,
             "latitude": 49.1106807,
-            "arrivalTime": "16:00",
+            "arrivalTime": 61200,
             "sequenceOrder": 1
           },
           {
@@ -21,7 +21,7 @@
             "stopName": "Gare",
             "longitude": 6.1687997,
             "latitude": 49.1106807,
-            "arrivalTime": "17:00",
+            "arrivalTime": 64800,
             "sequenceOrder": 2
           },
           {
@@ -29,7 +29,7 @@
             "stopName": "Gare",
             "longitude": 6.1687997,
             "latitude": 49.1106807,
-            "arrivalTime": "18:00",
+            "arrivalTime": 68400,
             "sequenceOrder": 3
           }
         ]

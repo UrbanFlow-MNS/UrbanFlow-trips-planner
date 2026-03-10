@@ -16,65 +16,79 @@ public class PathfinderService : IPathfinderService
     {
         throw new NotImplementedException();
     }
-
-    public async Task<List<TripEntity>> GetFastestRoutes(float startLong, float startLat, float endLong, float endLat)
+    
+    public async Task<List<TripMatchResult>> GetFastestRoutes( float startLong, float startLat, float endLong, float endLat, IWalkingRoutingService routingService)
     {
-        // TODO : Récupération des trips
         List<TripEntity> trips = new();
-        int allowedDistanceMargin = 500; // Distance en mètres maximum
-
+    
         var allUniqueStops = trips
             .SelectMany(t => t.Stops)
             .DistinctBy(s => new { s.Latitude, s.Longitude })
             .ToList();
-
-        var closestStartStops = allUniqueStops
-            .Select(s => new
-            {
-                Stop = s, Distance = DistanceService.GetDistanceInMeters(startLat, startLong, s.Latitude, s.Longitude)
-            })
-            .Where(x => x.Distance <= allowedDistanceMargin)
+    
+        var closestStartStopsCandidates = allUniqueStops
+            .Select(s => new { Stop = s, Distance = DistanceService.GetDistanceInMeters(startLat, startLong, s.Latitude, s.Longitude) })
             .OrderBy(x => x.Distance)
             .Take(3)
             .Select(x => x.Stop)
             .ToList();
-
-        var closestEndStops = allUniqueStops
-            .Select(s => new
-                { Stop = s, Distance = DistanceService.GetDistanceInMeters(endLat, endLong, s.Latitude, s.Longitude) })
-            .Where(x => x.Distance <= allowedDistanceMargin)
+    
+        var closestEndStopsCandidates = allUniqueStops
+            .Select(s => new { Stop = s, Distance = DistanceService.GetDistanceInMeters(endLat, endLong, s.Latitude, s.Longitude) })
             .OrderBy(x => x.Distance)
             .Take(3)
             .Select(x => x.Stop)
             .ToList();
-
+    
+        var startWalkingTimes = new Dictionary<StopEntity, int>();
+        foreach (var stop in closestStartStopsCandidates)
+        {
+            startWalkingTimes[stop] = await routingService.GetWalkingTimeSecondsAsync(startLat, startLong, stop.Latitude, stop.Longitude);
+        }
+    
+        var endWalkingTimes = new Dictionary<StopEntity, int>();
+        foreach (var stop in closestEndStopsCandidates)
+        {
+            endWalkingTimes[stop] = await routingService.GetWalkingTimeSecondsAsync(stop.Latitude, stop.Longitude, endLat, endLong);
+        }
+    
         var validRoutes = new List<TripMatchResult>();
-
+    
         foreach (var trip in trips)
         {
             var matchedStartStop = trip.Stops
-                .Where(s => closestStartStops.Any(css => css.Latitude == s.Latitude && css.Longitude == s.Longitude))
+                .Where(s => closestStartStopsCandidates.Any(closestStartStop => closestStartStop.Latitude == s.Latitude && closestStartStop.Longitude == s.Longitude))
                 .OrderBy(s => s.SequenceOrder)
                 .FirstOrDefault();
-
+    
             var matchedEndStop = trip.Stops
-                .Where(s => closestEndStops.Any(ces => ces.Latitude == s.Latitude && ces.Longitude == s.Longitude))
+                .Where(s => closestEndStopsCandidates.Any(closestEndStop => closestEndStop.Latitude == s.Latitude && closestEndStop.Longitude == s.Longitude))
                 .OrderByDescending(s => s.SequenceOrder)
                 .FirstOrDefault();
-
+    
             if (matchedStartStop != null && matchedEndStop != null &&
                 matchedStartStop.SequenceOrder < matchedEndStop.SequenceOrder)
             {
+                int transitTimeSeconds = matchedEndStop.ArrivalTime - matchedStartStop.ArrivalTime;
+    
+                int walkTimeStartSeconds = startWalkingTimes.First(kvp => kvp.Key.Latitude == matchedStartStop.Latitude && kvp.Key.Longitude == matchedStartStop.Longitude).Value;
+                int walkTimeEndSeconds = endWalkingTimes.First(kvp => kvp.Key.Latitude == matchedEndStop.Latitude && kvp.Key.Longitude == matchedEndStop.Longitude).Value;
+                
+                int totalWalkTimeSeconds = walkTimeStartSeconds + walkTimeEndSeconds;
+                int totalTimeSeconds = transitTimeSeconds + totalWalkTimeSeconds;
+    
                 validRoutes.Add(new TripMatchResult
                 {
                     Trip = trip,
                     StartStop = matchedStartStop,
-                    EndStop = matchedEndStop
+                    EndStop = matchedEndStop,
+                    TransitTimeSeconds = transitTimeSeconds,
+                    WalkTimeSeconds = totalWalkTimeSeconds,
+                    TotalTimeSeconds = totalTimeSeconds
                 });
             }
         }
-
-        // TODO : Calculer le temps de trajet
-        return trips;
+    
+        return validRoutes.OrderBy(r => r.TotalTimeSeconds).ToList();
     }
 }

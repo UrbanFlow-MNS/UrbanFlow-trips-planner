@@ -17,7 +17,7 @@ public class StopEntity
     public double Latitude { get; set; }
     
     [JsonPropertyName("arrivalTime")]
-    public string ArrivalTime { get; set; }
+    public int ArrivalTime { get; set; }
     
     [JsonPropertyName("sequenceOrder")]
     public int SequenceOrder { get; set; }
