@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Text.Json.Serialization;
+using UrbanFlow_trips_planner.Domain.Interfaces;
 
 namespace UrbanFlow_trips_planner.Domain.Services;
 

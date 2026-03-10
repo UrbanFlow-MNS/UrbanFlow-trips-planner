@@ -1,4 +1,4 @@
-﻿namespace UrbanFlow_trips_planner.Domain.Services;
+﻿namespace UrbanFlow_trips_planner.Domain.Interfaces;
 
 public interface IWalkingRoutingService
 {

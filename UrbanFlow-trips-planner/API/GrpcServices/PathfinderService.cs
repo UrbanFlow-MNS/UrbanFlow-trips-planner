@@ -1,5 +1,6 @@
 ﻿using UrbanFlow_trips_planner.Application.DTO;
 using UrbanFlow_trips_planner.Domain.Entities;
+using UrbanFlow_trips_planner.Domain.Interfaces;
 using UrbanFlow_trips_planner.Domain.Services;
 
 namespace UrbanFlow_trips_planner.API.GrpcServices;

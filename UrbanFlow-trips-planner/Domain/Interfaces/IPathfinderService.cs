@@ -1,7 +1,7 @@
 ﻿using UrbanFlow_trips_planner.Application.DTO;
 using UrbanFlow_trips_planner.Domain.Entities;
 
-namespace UrbanFlow_trips_planner.Domain.Services;
+namespace UrbanFlow_trips_planner.Domain.Interfaces;
 
 public interface IPathfinderService
 {
