@@ -3,7 +3,7 @@ using UrbanFlow_trips_planner.Domain.Entities;
 
 namespace UrbanFlow_trips_planner.Domain.Interfaces;
 
-public interface ITripProvider
+public interface IRouteProvider
 {
-    Task<List<TripEntity>> GetTripsAsync();
+    Task<List<RouteEntity>> GetRoutesAsync();
 }

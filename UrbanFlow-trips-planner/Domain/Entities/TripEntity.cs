@@ -8,5 +8,5 @@ public class TripEntity
     public string TripId { get; set; }
     
     [JsonPropertyName("stops")]
-    public StopEntity[] Stops { get; set; }
+    public List<StopEntity> Stops { get; set; }
 }

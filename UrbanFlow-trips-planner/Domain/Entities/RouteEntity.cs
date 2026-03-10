@@ -17,7 +17,7 @@ public class RouteEntity
     public string RouteTypeName { get; set; }
     
     [JsonPropertyName("trips")]
-    public TripEntity Trips { get; set; }
+    public List<TripEntity> Trips { get; set; }
     
     
 }

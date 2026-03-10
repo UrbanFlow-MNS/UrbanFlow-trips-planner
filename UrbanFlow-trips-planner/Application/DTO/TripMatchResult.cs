@@ -4,6 +4,7 @@ namespace UrbanFlow_trips_planner.Application.DTO;
 
 public record TripMatchResult
 {
+    public RouteEntity Route { get; init; } 
     public TripEntity Trip { get; init; }
     public StopEntity StartStop { get; init; }
     public StopEntity EndStop { get; init; }
@@ -11,6 +12,7 @@ public record TripMatchResult
     public int WalkTimeSeconds { get; init; }    
     public int TotalTimeSeconds { get; init; }   
     
+    public int FinalArrivalTimeSeconds { get; init; }
     public string FormattedTotalTime => FormatSeconds(TotalTimeSeconds);
     public string FormattedTransitTime => FormatSeconds(TransitTimeSeconds);
     public string FormattedWalkTime => FormatSeconds(WalkTimeSeconds);
