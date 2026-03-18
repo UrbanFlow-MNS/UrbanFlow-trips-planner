@@ -2,6 +2,8 @@ using DotNetEnv;
 using UrbanFlow_trips_planner.API.GrpcServices;
 using UrbanFlow_trips_planner.Domain.Interfaces;
 using UrbanFlow_trips_planner.Domain.Services;
+using UrbanFlow_trips_planner.GrpcService;
+
 
 Env.Load();
 
@@ -12,16 +14,14 @@ builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 builder.Services.AddGrpc();
 
-var app = builder.Build();
         
 builder.Services.AddHttpClient<IWalkingRoutingService, OsrmRoutingService>();
-app.MapGrpcService<GreeterService>();
+builder.Services.AddGrpcClient<Greeter.GreeterClient>(o =>
+{
+    o.Address = new Uri("https://localhost:6003"); //voir launchsettings pour modifier le port
+});
 
-// juste pour tester le greeter
-app.MapGet("/",
-    () =>
-        "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
-
+var app = builder.Build();
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
