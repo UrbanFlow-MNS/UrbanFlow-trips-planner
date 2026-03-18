@@ -17,4 +17,10 @@ public class FakeRouteProvider : IRouteProvider
     {
         return Task.FromResult(_fakeRoutes);
     }
+
+    public Task<List<RouteEntity>> GetRoutesByAgencyAsync(int id)
+    {
+        return Task.FromResult(_fakeRoutes);
+    }
+
 }

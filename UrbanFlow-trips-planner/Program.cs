@@ -1,11 +1,9 @@
-using DotNetEnv;
+
 using UrbanFlow_trips_planner.API.GrpcServices;
 using UrbanFlow_trips_planner.Domain.Interfaces;
 using UrbanFlow_trips_planner.Domain.Services;
-using UrbanFlow_trips_planner.GrpcService;
-
-
-Env.Load();
+using UrbanFlow_trips_planner.Infrastructure.Providers;
+using UrbanFlow_trips;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,19 +12,24 @@ builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 builder.Services.AddGrpc();
 
-        
-builder.Services.AddHttpClient<IWalkingRoutingService, OsrmRoutingService>();
-builder.Services.AddGrpcClient<Greeter.GreeterClient>(o =>
+
+
+builder.Services.AddGrpcClient<Tripper.TripperClient>(options =>
 {
-    o.Address = new Uri("https://localhost:6003"); //voir launchsettings pour modifier le port
+    options.Address = new Uri(builder.Configuration["Grpc:TripperUrl"]!);
 });
+
+builder.Services.AddScoped<IRouteProvider, RouteProvider>();
+
+builder.Services.AddScoped<IPathfinderService, PathfinderService>();
+builder.Services.AddScoped<IWalkingRoutingService, OsrmRoutingService>();
 
 var app = builder.Build();
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
-        
+
 app.Run();
 
 //namespace UrbanFlow_trips_planner;

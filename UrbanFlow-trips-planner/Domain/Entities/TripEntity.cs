@@ -5,7 +5,7 @@ namespace UrbanFlow_trips_planner.Domain.Entities;
 public class TripEntity
 {
     [JsonPropertyName("tripId")]
-    public string TripId { get; set; }
+    public int TripId { get; set; }
     
     [JsonPropertyName("stops")]
     public List<StopEntity> Stops { get; set; }

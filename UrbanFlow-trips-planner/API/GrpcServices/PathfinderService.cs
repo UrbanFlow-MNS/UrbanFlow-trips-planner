@@ -14,6 +14,7 @@ public class PathfinderService : IPathfinderService
     }
     
     public async Task<List<TripMatchResult>> GetFastestRoutes(
+    int agencyId,
     float startLong, float startLat, float endLong, float endLat, 
     int userDepartureTimeSeconds,
     IWalkingRoutingService routingService)

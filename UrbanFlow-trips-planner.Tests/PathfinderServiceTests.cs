@@ -30,7 +30,7 @@ public class PathfinderServiceTests
                 {
                     new TripEntity
                     {
-                        TripId = "1",
+                        TripId = 1,
                         Stops = new List<StopEntity>
                         {
                             new StopEntity { StopId = 1, StopName = "Gare", Longitude = 6.1687997, Latitude = 49.1106807, ArrivalTime = 60200, SequenceOrder = 1 },
@@ -47,7 +47,7 @@ public class PathfinderServiceTests
                 {
                     new TripEntity
                     {
-                        TripId = "2",
+                        TripId = 2,
                         Stops = new List<StopEntity>
                         {
                             new StopEntity { StopId = 3, StopName = "Gare", Longitude = 6.1687997, Latitude = 49.1106807, ArrivalTime = 60300, SequenceOrder = 1 },
@@ -63,6 +63,7 @@ public class PathfinderServiceTests
         var pathfinderService = new PathfinderService(fakeTripProvider);
 
         var result = await pathfinderService.GetFastestRoutes(
+            1,
             userStartLon, userStartLat, 
             destinationLon, destinationLat, 
             userDepartureTimeSeconds,
@@ -88,7 +89,7 @@ public class PathfinderServiceTests
         var fastestRoute = result.First();
         
         
-        Assert.AreEqual("2", fastestRoute.Trip.TripId);
+        Assert.AreEqual(2, fastestRoute.Trip.TripId);
         Assert.AreEqual(500, fastestRoute.TransitTimeSeconds);
         Assert.AreEqual(240, fastestRoute.WalkTimeSeconds);
         Assert.AreEqual(920, fastestRoute.TotalTimeSeconds);
