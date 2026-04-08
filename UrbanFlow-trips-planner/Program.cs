@@ -26,7 +26,6 @@ builder.Services.AddScoped<IWalkingRoutingService, OsrmRoutingService>();
 
 var app = builder.Build();
 
-app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 
