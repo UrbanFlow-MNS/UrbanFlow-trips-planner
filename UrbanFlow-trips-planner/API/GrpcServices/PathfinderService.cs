@@ -64,7 +64,7 @@ public class PathfinderService : IPathfinderService
     
     var validRoutes = new List<TripMatchResult>();
 
-    routes.ForEach(r => Console.WriteLine($"potential route {r}"));
+    Console.WriteLine($"potential route {routes.Count}");
     
     foreach (var route in routes)
     {
@@ -112,7 +112,7 @@ public class PathfinderService : IPathfinderService
             }
         }
     }
-    validRoutes.ForEach(r => Console.WriteLine(r));
+    validRoutes.ForEach(r => Console.WriteLine($"route {r}"));
 
     return validRoutes
         .OrderBy(r => r.FinalArrivalTimeSeconds)
