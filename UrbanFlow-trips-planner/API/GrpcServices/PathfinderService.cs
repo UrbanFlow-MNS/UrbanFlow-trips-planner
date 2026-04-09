@@ -64,6 +64,8 @@ public class PathfinderService : IPathfinderService
     
     var validRoutes = new List<TripMatchResult>();
 
+    routes.ForEach(r => Console.WriteLine($"potential route {r}"));
+    
     foreach (var route in routes)
     {
         foreach (var trip in route.Trips)
