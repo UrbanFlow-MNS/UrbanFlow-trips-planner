@@ -49,13 +49,19 @@ public class PathfinderService : IPathfinderService
     {
         startWalkingTimes[stop] = await routingService.GetWalkingTimeSecondsAsync(startLat, startLong, stop.Latitude, stop.Longitude);
     }
-
+    
+    foreach (var kvp in startWalkingTimes)
+        Console.WriteLine($"Stop: {kvp.Key.StopName} | Walking time: {kvp.Value}s");
+    
     var endWalkingTimes = new Dictionary<StopEntity, int>();
     foreach (var stop in closestEndStopsCandidates)
     {
         endWalkingTimes[stop] = await routingService.GetWalkingTimeSecondsAsync(stop.Latitude, stop.Longitude, endLat, endLong);
     }
 
+    foreach (var kvp in endWalkingTimes)
+        Console.WriteLine($"Stop: {kvp.Key.StopName} | Walking time: {kvp.Value}s");
+    
     var validRoutes = new List<TripMatchResult>();
 
     foreach (var route in routes)
@@ -104,6 +110,7 @@ public class PathfinderService : IPathfinderService
             }
         }
     }
+    validRoutes.ForEach(r => Console.WriteLine(r));
 
     return validRoutes
         .OrderBy(r => r.FinalArrivalTimeSeconds)
