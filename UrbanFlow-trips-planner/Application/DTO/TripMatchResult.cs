@@ -13,11 +13,11 @@ public record TripMatchResult
     public int TotalTimeSeconds { get; init; }   
     
     public int FinalArrivalTimeSeconds { get; init; }
-    public string FormattedTotalTime => FormatSeconds(TotalTimeSeconds);
-    public string FormattedTransitTime => FormatSeconds(TransitTimeSeconds);
-    public string FormattedWalkTime => FormatSeconds(WalkTimeSeconds);
+    public required string FormattedTotalTime { get; init; }
+    public required string FormattedTransitTime { get; init; }
+    public required string FormattedWalkTime { get; init; }
 
-    private static string FormatSeconds(int totalSeconds)
+    public static string FormatSeconds(int totalSeconds)
     {
         TimeSpan time = TimeSpan.FromSeconds(totalSeconds);
 

@@ -106,7 +106,10 @@ public class PathfinderService : IPathfinderService
                         WalkTimeSeconds = totalWalkTimeSeconds,
                         TransitTimeSeconds = transitTimeSeconds,
                         TotalTimeSeconds = totalTimeSeconds,
-                        FinalArrivalTimeSeconds = finalArrivalTimeSeconds
+                        FinalArrivalTimeSeconds = finalArrivalTimeSeconds,
+                        FormattedTotalTime = TripMatchResult.FormatSeconds(totalTimeSeconds),
+                        FormattedTransitTime = TripMatchResult.FormatSeconds(transitTimeSeconds),
+                        FormattedWalkTime = TripMatchResult.FormatSeconds(totalWalkTimeSeconds)
                     });
                 }
             }
