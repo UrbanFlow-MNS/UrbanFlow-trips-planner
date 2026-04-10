@@ -4,7 +4,7 @@ namespace UrbanFlow_trips_planner.Application.DTO;
 
 public record TripMatchResult
 {
-    public RouteEntity Route { get; init; } 
+    public int RouteId { get; init; } 
     public TripEntity Trip { get; init; }
     public StopEntity StartStop { get; init; }
     public StopEntity EndStop { get; init; }

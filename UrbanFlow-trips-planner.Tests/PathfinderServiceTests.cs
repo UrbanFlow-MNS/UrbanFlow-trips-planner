@@ -74,7 +74,7 @@ public class PathfinderServiceTests
         for (int i = 0; i < result.Count; i++)
         {
             var r = result[i];
-            Console.WriteLine($"--- OPTION {i + 1} : {r.Route.RouteShortName} (Trip {r.Trip.TripId}) ---");
+            Console.WriteLine($"--- OPTION {i + 1} : {r.RouteId} (Trip {r.Trip.TripId}) ---");
             Console.WriteLine($"Depart bus : {r.StartStop.StopName} a {TimeSpan.FromSeconds(r.StartStop.ArrivalTime):hh\\:mm\\:ss}");
             Console.WriteLine($"Arrivee bus : {r.EndStop.StopName} a {TimeSpan.FromSeconds(r.EndStop.ArrivalTime):hh\\:mm\\:ss}");
             Console.WriteLine($"Marche totale : {r.FormattedWalkTime} ({r.WalkTimeSeconds}s)");
