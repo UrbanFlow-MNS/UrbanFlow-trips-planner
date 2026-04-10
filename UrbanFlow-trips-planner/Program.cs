@@ -1,4 +1,5 @@
 
+using System.Text.Json.Serialization;
 using UrbanFlow_trips_planner.API.GrpcServices;
 using UrbanFlow_trips_planner.Domain.Interfaces;
 using UrbanFlow_trips_planner.Domain.Services;
@@ -9,8 +10,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddAuthorization();
-builder.Services.AddControllers();
-builder.Services.AddGrpc();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.WriteIndented = false;
+    });builder.Services.AddGrpc();
 
 
 
@@ -26,7 +31,6 @@ builder.Services.AddScoped<IWalkingRoutingService, OsrmRoutingService>();
 
 var app = builder.Build();
 
-//app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 

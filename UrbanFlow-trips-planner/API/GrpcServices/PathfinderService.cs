@@ -2,15 +2,54 @@
 using UrbanFlow_trips_planner.Domain.Entities;
 using UrbanFlow_trips_planner.Domain.Interfaces;
 using UrbanFlow_trips_planner.Domain.Services;
+using UrbanFlow_trips_planner.Infrastructure.Providers;
 
 namespace UrbanFlow_trips_planner.API.GrpcServices;
 
 public class PathfinderService : IPathfinderService
 {
+    List<RouteEntity> fakeRoutes = new List<RouteEntity>
+    {
+        new RouteEntity
+        {
+            RouteId = 1,
+            RouteShortName = "Ligne Lente",
+            Trips = new List<TripEntity>
+            {
+                new TripEntity
+                {
+                    TripId = 1,
+                    Stops = new List<StopEntity>
+                    {
+                        new StopEntity { StopId = 1, StopName = "Gare", Longitude = 6.1687997, Latitude = 49.1106807, ArrivalTime = 60200, SequenceOrder = 1 },
+                        new StopEntity { StopId = 2, StopName = "Saulcy", Longitude = 6.1699000, Latitude = 49.1190000, ArrivalTime = 61000, SequenceOrder = 2 }
+                    }
+                }
+            }
+        },
+        new RouteEntity
+        {
+            RouteId = 2,
+            RouteShortName = "Ligne Rapide",
+            Trips = new List<TripEntity>
+            {
+                new TripEntity
+                {
+                    TripId = 2,
+                    Stops = new List<StopEntity>
+                    {
+                        new StopEntity { StopId = 3, StopName = "Gare", Longitude = 6.1687997, Latitude = 49.1106807, ArrivalTime = 60300, SequenceOrder = 1 },
+                        new StopEntity { StopId = 4, StopName = "Saulcy", Longitude = 6.1699000, Latitude = 49.1190000, ArrivalTime = 60800, SequenceOrder = 2 }
+                    }
+                }
+            }
+        }
+    };
     private readonly IRouteProvider _routeProvider;
     public PathfinderService(IRouteProvider routeProvider)
     {
-        _routeProvider = routeProvider;
+        //_routeProvider = routeProvider;
+        _routeProvider = new FakeRouteProvider(fakeRoutes); ;
     }
     
     public async Task<List<TripMatchResult>> GetFastestRoutes(
@@ -20,8 +59,7 @@ public class PathfinderService : IPathfinderService
     IWalkingRoutingService routingService)
 {
     List<RouteEntity> routes = await _routeProvider.GetRoutesAsync();
-    int allowedDistanceMargin = 500;
-
+    
     var allUniqueStops = routes
         .SelectMany(r => r.Trips)
         .SelectMany(t => t.Stops)
@@ -30,7 +68,6 @@ public class PathfinderService : IPathfinderService
 
     var closestStartStopsCandidates = allUniqueStops
         .Select(s => new { Stop = s, Distance = DistanceService.GetDistanceInMeters(startLat, startLong, s.Latitude, s.Longitude) })
-        .Where(x => x.Distance <= allowedDistanceMargin)
         .OrderBy(x => x.Distance)
         .Take(3)
         .Select(x => x.Stop)
@@ -38,7 +75,6 @@ public class PathfinderService : IPathfinderService
 
     var closestEndStopsCandidates = allUniqueStops
         .Select(s => new { Stop = s, Distance = DistanceService.GetDistanceInMeters(endLat, endLong, s.Latitude, s.Longitude) })
-        .Where(x => x.Distance <= allowedDistanceMargin)
         .OrderBy(x => x.Distance)
         .Take(3)
         .Select(x => x.Stop)
@@ -49,15 +85,17 @@ public class PathfinderService : IPathfinderService
     {
         startWalkingTimes[stop] = await routingService.GetWalkingTimeSecondsAsync(startLat, startLong, stop.Latitude, stop.Longitude);
     }
-
+    
     var endWalkingTimes = new Dictionary<StopEntity, int>();
     foreach (var stop in closestEndStopsCandidates)
     {
         endWalkingTimes[stop] = await routingService.GetWalkingTimeSecondsAsync(stop.Latitude, stop.Longitude, endLat, endLong);
     }
-
+    
     var validRoutes = new List<TripMatchResult>();
 
+    Console.WriteLine($"potential route {routes.Count}");
+    
     foreach (var route in routes)
     {
         foreach (var trip in route.Trips)
@@ -104,6 +142,7 @@ public class PathfinderService : IPathfinderService
             }
         }
     }
+    validRoutes.ForEach(r => Console.WriteLine($"route {r}"));
 
     return validRoutes
         .OrderBy(r => r.FinalArrivalTimeSeconds)

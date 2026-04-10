@@ -41,7 +41,7 @@ public class RouteProvider : IRouteProvider
                 StopName      = s.StopName,
                 Longitude     = (float)s.Longitude,
                 Latitude      = (float)s.Latitude,
-                ArrivalTime   = TimeToSeconds(s.ArrivalTime),
+                ArrivalTime   = int.Parse(s.ArrivalTime),
                 SequenceOrder = s.SequenceOrder
             }).ToList()
         }).ToList()
@@ -50,8 +50,9 @@ public class RouteProvider : IRouteProvider
     private static int TimeToSeconds(string time)
     {
         var parts = time.Split(':');
-        return int.Parse(parts[0]) * 3600
-               + int.Parse(parts[1]) * 60
-               + int.Parse(parts[2]);
+        int hours   = int.Parse(parts[0]);
+        int minutes = int.Parse(parts[1]);
+        int seconds = parts.Length > 2 ? int.Parse(parts[2]) : 0;
+        return hours * 3600 + minutes * 60 + seconds;
     }
 }
