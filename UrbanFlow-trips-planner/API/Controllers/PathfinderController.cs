@@ -34,7 +34,7 @@ public class PathfinderController : ControllerBase
             startLong, startLat,
             endLong,   endLat,
             departureTimeSeconds,
-            _walkingRoutingService);
+            _walkingRoutingService) ?? null;
 
         if (results == null)
             return NotFound("Aucun trajet trouvé pour ces paramètres.");
