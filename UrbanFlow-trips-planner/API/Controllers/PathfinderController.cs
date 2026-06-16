@@ -37,7 +37,10 @@ public class PathfinderController : ControllerBase
             _walkingRoutingService) ?? null;
 
         if (results == null || results.Count <= 0)
+        {
+            Console.WriteLine("ERREUR 404");
             return NotFound("Aucun trajet trouvé pour ces paramètres.");
+        }
 
         return Ok(results);
     }
