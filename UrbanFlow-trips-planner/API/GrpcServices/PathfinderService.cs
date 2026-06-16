@@ -128,7 +128,7 @@ public class PathfinderService : IPathfinderService
             .ToList();
     } catch (Exception e)
     {
-        Console.WriteLine(e);
+        Console.WriteLine("ERREUR" + e);
         return null;
     }
 }

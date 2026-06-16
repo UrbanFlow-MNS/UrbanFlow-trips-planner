@@ -36,7 +36,7 @@ public class PathfinderController : ControllerBase
             departureTimeSeconds,
             _walkingRoutingService) ?? null;
 
-        if (results == null)
+        if (results == null || results.Count <= 0)
             return NotFound("Aucun trajet trouvé pour ces paramètres.");
 
         return Ok(results);
