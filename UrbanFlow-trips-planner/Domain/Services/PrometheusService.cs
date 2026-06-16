@@ -3,7 +3,7 @@ using UrbanFlow_trips_planner.Domain.Interfaces;
 
 namespace UrbanFlow_trips_planner.Domain.Services;
 
-public class PrometheusService : IPrometheusService
+public class PrometheusService
 {
     public PrometheusService()
     {

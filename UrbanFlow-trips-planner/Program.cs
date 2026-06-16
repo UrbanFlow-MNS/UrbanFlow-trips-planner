@@ -25,9 +25,9 @@ builder.Services.AddGrpcClient<Tripper.TripperClient>(options =>
 });
 
 builder.Services.AddScoped<IRouteProvider, RouteProvider>();
-builder.Services.AddScoped<IPrometheusService, PrometheusService>();
 builder.Services.AddScoped<IPathfinderService, PathfinderService>();
 builder.Services.AddScoped<IWalkingRoutingService, OsrmRoutingService>();
+builder.Services.AddSingleton<PrometheusService>();
 builder.Services.AddControllers();
 
 var app = builder.Build();
