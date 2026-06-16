@@ -6,7 +6,7 @@ EXPOSE 4008
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["UrbanFlow-trips-planner/UrbanFlow-trips-planner.csproj", "./"]
+COPY ["UrbanFlow-trips-planner.csproj", "./"]
 RUN dotnet restore "UrbanFlow-trips-planner.csproj"
 COPY . .
 WORKDIR "/src/UrbanFlow-trips-planner"
