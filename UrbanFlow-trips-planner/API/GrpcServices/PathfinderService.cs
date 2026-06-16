@@ -14,7 +14,7 @@ public class PathfinderService : IPathfinderService
         _routeProvider = routeProvider;
     }
     
-    public async Task<List<TripMatchResult>> GetFastestRoutes(
+    public async Task<List<TripMatchResult>?> GetFastestRoutes(
     int agencyId,
     float startLong, float startLat, float endLong, float endLat, 
     int userDepartureTimeSeconds,
@@ -102,6 +102,9 @@ public class PathfinderService : IPathfinderService
             }
         }
     }
+    
+    if(validRoutes.Count <= 0)
+        return null;
 
     return validRoutes
         .OrderBy(r => r.FinalArrivalTimeSeconds)
