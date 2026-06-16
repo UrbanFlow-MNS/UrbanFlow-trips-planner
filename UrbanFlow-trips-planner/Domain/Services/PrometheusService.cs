@@ -7,10 +7,18 @@ public class PrometheusService : IPrometheusService
 {
     public PrometheusService()
     {
-        Metrics.DefaultRegistry.SetStaticLabels(new Dictionary<string, string>
+        try
         {
-            { "app", "dotnet9-prometheus" }
-        });
+            Metrics.DefaultRegistry.SetStaticLabels(new Dictionary<string, string>
+            {
+                { "app", "dotnet9-prometheus" }
+            });
+        }
+        catch (Exception exception)
+        {
+            Console.WriteLine(exception);
+        }
+
     }
 
     public async Task<string> GetMetricsAsync()
