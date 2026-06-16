@@ -9,7 +9,7 @@ WORKDIR /src
 COPY ["UrbanFlow-trips-planner.csproj", "./"]
 RUN dotnet restore "UrbanFlow-trips-planner.csproj"
 COPY . .
-WORKDIR "/src/UrbanFlow-trips-planner"
+WORKDIR "/src/"
 RUN dotnet build "UrbanFlow-trips-planner.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
