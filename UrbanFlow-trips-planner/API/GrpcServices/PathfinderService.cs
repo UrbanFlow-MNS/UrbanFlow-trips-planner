@@ -1,4 +1,7 @@
-﻿using UrbanFlow_trips_planner.Application.DTO;
+﻿using System.Linq.Expressions;
+using System.Net;
+using Microsoft.AspNetCore.Http.HttpResults;
+using UrbanFlow_trips_planner.Application.DTO;
 using UrbanFlow_trips_planner.Domain.Entities;
 using UrbanFlow_trips_planner.Domain.Interfaces;
 using UrbanFlow_trips_planner.Domain.Services;
@@ -14,15 +17,24 @@ public class PathfinderService : IPathfinderService
         _routeProvider = routeProvider;
     }
     
-    public async Task<List<TripMatchResult>?> GetFastestRoutes(
-    int agencyId,
+    public async Task<List<TripMatchResult>> GetFastestRoutes(
     float startLong, float startLat, float endLong, float endLat, 
     int userDepartureTimeSeconds,
     IWalkingRoutingService routingService)
-{
+    { 
+        
+        List<RouteEntity> routes;
     try
     {
-        List<RouteEntity> routes = await _routeProvider.GetRoutesAsync();
+        routes = await _routeProvider.GetRoutesAsync();
+    }
+    catch (Exception ex)
+    {
+        throw new HttpRequestException("GRPC Communication failed", ex, HttpStatusCode.InternalServerError);
+    }
+
+    try
+    {
 
         var allUniqueStops = routes
             .SelectMany(r => r.Trips)
@@ -99,7 +111,6 @@ public class PathfinderService : IPathfinderService
                             kvp.Key.Longitude == matchedEndStop.Longitude).Value;
 
                         int transitTimeSeconds = matchedEndStop.ArrivalTime - matchedStartStop.ArrivalTime;
-                        int totalWalkTimeSeconds = walkTimeStartSeconds + walkTimeEndSeconds;
 
                         int finalArrivalTimeSeconds = matchedEndStop.ArrivalTime + walkTimeEndSeconds;
                         int totalTimeSeconds = finalArrivalTimeSeconds - userDepartureTimeSeconds;
@@ -110,7 +121,8 @@ public class PathfinderService : IPathfinderService
                             Trip = trip,
                             StartStop = matchedStartStop,
                             EndStop = matchedEndStop,
-                            WalkTimeSeconds = totalWalkTimeSeconds,
+                            StartWalkTimeSeconds = walkTimeStartSeconds,
+                            EndWalkTimeSeconds = walkTimeEndSeconds,
                             TransitTimeSeconds = transitTimeSeconds,
                             TotalTimeSeconds = totalTimeSeconds,
                             FinalArrivalTimeSeconds = finalArrivalTimeSeconds
@@ -121,7 +133,7 @@ public class PathfinderService : IPathfinderService
         }
 
         if (validRoutes.Count <= 0)
-            return null;
+            throw new HttpRequestException("No trips found", null, HttpStatusCode.NotFound);
 
         return validRoutes
             .OrderBy(r => r.FinalArrivalTimeSeconds)
@@ -129,7 +141,7 @@ public class PathfinderService : IPathfinderService
     } catch (Exception e)
     {
         Console.WriteLine("ERREUR" + e);
-        return null;
+        throw new HttpRequestException("No trips found", e, HttpStatusCode.NotFound);
     }
 }
 }

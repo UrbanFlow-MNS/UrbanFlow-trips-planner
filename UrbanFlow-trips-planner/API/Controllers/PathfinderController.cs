@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Net;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using UrbanFlow_trips_planner.Domain.Interfaces;
 
 namespace UrbanFlow_trips_planner.API.Controllers;
@@ -18,10 +20,9 @@ public class PathfinderController : ControllerBase
         _walkingRoutingService = walkingRoutingService;
     }
 
-    /// GET /api/pathfinder/fastest?agencyId=1&startLat=...&startLong=...&endLat=...&endLong=...&departureTimeSeconds=...
+    /// GET /api/pathfinder/fastest?startLat=...&startLong=...&endLat=...&endLong=...&departureTimeSeconds=...
     [HttpGet("fastest")]
     public async Task<IActionResult> GetFastest(
-        [FromQuery] int   agencyId,
         [FromQuery] float startLat,
         [FromQuery] float startLong,
         [FromQuery] float endLat,
@@ -29,19 +30,26 @@ public class PathfinderController : ControllerBase
         [FromQuery] int   departureTimeSeconds,
         CancellationToken cancellationToken = default)
     {
-        var results = await _pathfinderService.GetFastestRoutes(
-            agencyId,
-            startLong, startLat,
-            endLong,   endLat,
-            departureTimeSeconds,
-            _walkingRoutingService) ?? null;
-
-        if (results == null || results.Count <= 0)
+        try
         {
-            Console.WriteLine("ERREUR 404");
-            return NotFound("Aucun trajet trouvé pour ces paramètres.");
-        }
+            var results = await _pathfinderService.GetFastestRoutes(
+                startLong, startLat,
+                endLong, endLat,
+                departureTimeSeconds,
+                _walkingRoutingService);
+            
+            if (results.Count <= 0)
+                return NotFound("Aucun trajet trouvé pour ces paramètres.");
+        
 
-        return Ok(results);
+            return Ok(results);
+        }
+        catch (HttpRequestException ex)
+        {
+            if (ex.StatusCode == HttpStatusCode.NotFound)
+                return NotFound("No trips were found");
+            
+            throw new Exception(ex.Message);
+        }
     }
 }

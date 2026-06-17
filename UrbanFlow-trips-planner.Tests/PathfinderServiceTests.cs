@@ -63,7 +63,6 @@ public class PathfinderServiceTests
         var pathfinderService = new PathfinderService(fakeTripProvider);
 
         var result = await pathfinderService.GetFastestRoutes(
-            1,
             userStartLon, userStartLat, 
             destinationLon, destinationLat, 
             userDepartureTimeSeconds,
@@ -77,7 +76,7 @@ public class PathfinderServiceTests
             Console.WriteLine($"--- OPTION {i + 1} : {r.RouteId} (Trip {r.Trip.TripId}) ---");
             Console.WriteLine($"Depart bus : {r.StartStop.StopName} a {TimeSpan.FromSeconds(r.StartStop.ArrivalTime):hh\\:mm\\:ss}");
             Console.WriteLine($"Arrivee bus : {r.EndStop.StopName} a {TimeSpan.FromSeconds(r.EndStop.ArrivalTime):hh\\:mm\\:ss}");
-            Console.WriteLine($"Marche totale : {r.FormattedWalkTime} ({r.WalkTimeSeconds}s)");
+            Console.WriteLine($"Marche totale : {r.FormattedTotalWalkTime} ({r.TotalWalkTimeSeconds}s)");
             Console.WriteLine($"Dans le bus : {r.FormattedTransitTime} ({r.TransitTimeSeconds}s)");
             Console.WriteLine($"TEMPS GLOBAL : {r.FormattedTotalTime} ({r.TotalTimeSeconds}s)");
             Console.WriteLine($"ARRIVEE FINALE : {TimeSpan.FromSeconds(r.FinalArrivalTimeSeconds):hh\\:mm\\:ss}\n");
@@ -91,7 +90,7 @@ public class PathfinderServiceTests
         
         Assert.AreEqual(2, fastestRoute.Trip.TripId);
         Assert.AreEqual(500, fastestRoute.TransitTimeSeconds);
-        Assert.AreEqual(240, fastestRoute.WalkTimeSeconds);
+        Assert.AreEqual(240, fastestRoute.TotalWalkTimeSeconds);
         Assert.AreEqual(920, fastestRoute.TotalTimeSeconds);
         Assert.AreEqual(60920, fastestRoute.FinalArrivalTimeSeconds);
     }

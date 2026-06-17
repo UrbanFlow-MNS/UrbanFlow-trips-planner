@@ -1,5 +1,6 @@
 
 using System.Text.Json.Serialization;
+using Scalar.AspNetCore;
 using UrbanFlow_trips_planner.API.GrpcServices;
 using UrbanFlow_trips_planner.Domain.Interfaces;
 using UrbanFlow_trips_planner.Domain.Services;
@@ -18,12 +19,12 @@ builder.Services.AddControllers()
     });builder.Services.AddGrpc();
 
 
-
 builder.Services.AddGrpcClient<Tripper.TripperClient>(options =>
 {
     options.Address = new Uri(builder.Configuration["Grpc:TripperUrl"]!);
 });
 
+builder.Services.AddOpenApi();
 builder.Services.AddScoped<IRouteProvider, RouteProvider>();
 builder.Services.AddScoped<IPathfinderService, PathfinderService>();
 builder.Services.AddScoped<IWalkingRoutingService, OsrmRoutingService>();
@@ -31,6 +32,15 @@ builder.Services.AddSingleton<PrometheusService>();
 builder.Services.AddControllers();
 
 var app = builder.Build();
+
+
+app.MapOpenApi();
+
+app.MapScalarApiReference(options =>
+{
+    options.Title = "UrbanFlow Trips Planner API";
+    options.Theme = ScalarTheme.Moon;
+});
 
 app.UseAuthorization();
 app.MapControllers();

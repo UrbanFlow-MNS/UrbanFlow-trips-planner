@@ -9,13 +9,16 @@ public record TripMatchResult
     public StopEntity StartStop { get; init; }
     public StopEntity EndStop { get; init; }
     public int TransitTimeSeconds { get; init; }
-    public int WalkTimeSeconds { get; init; }    
+    public int StartWalkTimeSeconds { get; init; }
+    public int EndWalkTimeSeconds { get; init; }
+    public int TotalWalkTimeSeconds => StartWalkTimeSeconds + EndWalkTimeSeconds;  
     public int TotalTimeSeconds { get; init; }   
-    
     public int FinalArrivalTimeSeconds { get; init; }
     public string FormattedTotalTime => FormatSeconds(TotalTimeSeconds);
     public string FormattedTransitTime => FormatSeconds(TransitTimeSeconds);
-    public string FormattedWalkTime => FormatSeconds(WalkTimeSeconds);
+    public string FormattedTotalWalkTime => FormatSeconds(TotalWalkTimeSeconds);
+    public string FormattedStartWalkTime => FormatSeconds(StartWalkTimeSeconds);
+    public string FormattedEndWalkTime => FormatSeconds(EndWalkTimeSeconds);
 
     private static string FormatSeconds(int totalSeconds)
     {
