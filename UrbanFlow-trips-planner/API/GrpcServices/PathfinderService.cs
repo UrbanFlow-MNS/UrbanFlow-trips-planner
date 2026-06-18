@@ -32,10 +32,6 @@ public class PathfinderService : IPathfinderService
     {
         throw new HttpRequestException("GRPC Communication failed", ex, HttpStatusCode.InternalServerError);
     }
-
-    try
-    {
-
         var allUniqueStops = routes
             .SelectMany(r => r.Trips)
             .SelectMany(t => t.Stops)
@@ -138,10 +134,6 @@ public class PathfinderService : IPathfinderService
         return validRoutes
             .OrderBy(r => r.FinalArrivalTimeSeconds)
             .ToList();
-    } catch (Exception e)
-    {
-        Console.WriteLine("ERREUR" + e);
-        throw new HttpRequestException("No trips found", e, HttpStatusCode.NotFound);
-    }
+    
 }
 }

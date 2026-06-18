@@ -41,7 +41,7 @@ public class RouteProvider : IRouteProvider
                 StopName      = s.StopName,
                 Longitude     = (float)s.Longitude,
                 Latitude      = (float)s.Latitude,
-                ArrivalTime   = int.Parse(s.ArrivalTime),
+                ArrivalTime   = TimeToSeconds(s.ArrivalTime),
                 SequenceOrder = s.SequenceOrder
             }).ToList()
         }).ToList()
