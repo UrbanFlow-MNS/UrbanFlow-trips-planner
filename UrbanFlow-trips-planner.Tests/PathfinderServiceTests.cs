@@ -69,7 +69,8 @@ public class PathfinderServiceTests
             routingService);
 
         Console.WriteLine($"Recherche lancée à : {userDepartureTimeSeconds}s depuis minuit\n");
-
+        Console.WriteLine($"Position du départ {userStartLat}lat - {userStartLon}lon");
+        Console.WriteLine($"Position d'arrivée {destinationLat}lat - {destinationLon}lon");
         for (int i = 0; i < result.Count; i++)
         {
             var r = result[i];
