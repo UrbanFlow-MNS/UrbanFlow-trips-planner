@@ -4,11 +4,11 @@ namespace UrbanFlow_trips_planner.Domain.Interfaces;
 
 public interface IPathfinderService
 {
-    public Task<List<TripMatchResult>?> GetFastestRoutes(
-        float startLong, 
-        float startLat, 
-        float endLong, 
-        float endLat, 
+    Task<List<TripMatchResult>> GetFastestRoutes(
+        float startLong,
+        float startLat,
+        float endLong,
+        float endLat,
         int userDepartureTimeSeconds,
         IWalkingRoutingService routingService);
 }

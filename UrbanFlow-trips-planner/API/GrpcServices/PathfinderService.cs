@@ -18,122 +18,165 @@ public class PathfinderService : IPathfinderService
     }
     
     public async Task<List<TripMatchResult>> GetFastestRoutes(
-    float startLong, float startLat, float endLong, float endLat, 
+    float startLong, float startLat, float endLong, float endLat,
     int userDepartureTimeSeconds,
     IWalkingRoutingService routingService)
-    { 
-        
-        List<RouteEntity> routes;
-    try
     {
-        routes = await _routeProvider.GetRoutesAsync();
+        var routes = await GetRoutesOrThrowAsync();
+    
+        var allUniqueStops = GetUniqueStops(routes);
+    
+        var closestStartStops = GetClosestStops(allUniqueStops, startLat, startLong);
+        var closestEndStops = GetClosestStops(allUniqueStops, endLat, endLong);
+    
+        var startWalkingTimes = await GetWalkingTimesAsync(
+            closestStartStops, startLat, startLong, routingService, fromOrigin: true);
+    
+        var endWalkingTimes = await GetWalkingTimesAsync(
+            closestEndStops, endLat, endLong, routingService, fromOrigin: false);
+    
+        var validRoutes = BuildValidTripMatches(
+            routes, closestStartStops, closestEndStops,
+            startWalkingTimes, endWalkingTimes, userDepartureTimeSeconds);
+    
+        if (validRoutes.Count <= 0)
+            throw new HttpRequestException("No trips found", null, HttpStatusCode.NotFound);
+    
+        return validRoutes
+            .OrderBy(r => r.FinalArrivalTimeSeconds)
+            .ToList();
     }
-    catch (Exception ex)
+    
+    private async Task<List<RouteEntity>> GetRoutesOrThrowAsync()
     {
-        throw new HttpRequestException("GRPC Communication failed", ex, HttpStatusCode.InternalServerError);
+        try
+        {
+            return await _routeProvider.GetRoutesAsync();
+        }
+        catch (Exception ex)
+        {
+            throw new HttpRequestException("GRPC Communication failed", ex, HttpStatusCode.InternalServerError);
+        }
     }
-        var allUniqueStops = routes
+    
+    private static List<StopEntity> GetUniqueStops(List<RouteEntity> routes)
+    {
+        return routes
             .SelectMany(r => r.Trips)
             .SelectMany(t => t.Stops)
-            .DistinctBy(s => new { s.Latitude, s.Longitude })
+            .DistinctBy(s => s.StopId)
             .ToList();
-
-        var closestStartStopsCandidates = allUniqueStops
+    }
+    
+    private static List<StopEntity> GetClosestStops(
+        List<StopEntity> stops, float latitude, float longitude, int count = 3)
+    {
+        return stops
             .Select(s => new
             {
                 Stop = s,
-                Distance = DistanceService.GetDistanceInMeters(startLat, startLong, s.Latitude, s.Longitude)
+                Distance = DistanceService.GetDistanceInMeters(latitude, longitude, s.Latitude, s.Longitude)
             })
             .OrderBy(x => x.Distance)
-            .Take(3)
+            .Take(count)
             .Select(x => x.Stop)
             .ToList();
-
-        var closestEndStopsCandidates = allUniqueStops
-            .Select(s => new
-            {
-                Stop = s, Distance = DistanceService.GetDistanceInMeters(endLat, endLong, s.Latitude, s.Longitude)
-            })
-            .OrderBy(x => x.Distance)
-            .Take(3)
-            .Select(x => x.Stop)
-            .ToList();
-
-        var startWalkingTimes = new Dictionary<StopEntity, int>();
-        foreach (var stop in closestStartStopsCandidates)
+    }
+    
+    private static async Task<Dictionary<StopEntity, int>> GetWalkingTimesAsync(
+        List<StopEntity> stops, float latitude, float longitude,
+        IWalkingRoutingService routingService, bool fromOrigin)
+    {
+        var walkingTimes = new Dictionary<StopEntity, int>();
+    
+        foreach (var stop in stops)
         {
-            startWalkingTimes[stop] =
-                await routingService.GetWalkingTimeSecondsAsync(startLat, startLong, stop.Latitude, stop.Longitude);
+            walkingTimes[stop] = fromOrigin
+                ? await routingService.GetWalkingTimeSecondsAsync(latitude, longitude, stop.Latitude, stop.Longitude)
+                : await routingService.GetWalkingTimeSecondsAsync(stop.Latitude, stop.Longitude, latitude, longitude);
         }
-
-        var endWalkingTimes = new Dictionary<StopEntity, int>();
-        foreach (var stop in closestEndStopsCandidates)
-        {
-            endWalkingTimes[stop] =
-                await routingService.GetWalkingTimeSecondsAsync(stop.Latitude, stop.Longitude, endLat, endLong);
-        }
-
+    
+        return walkingTimes;
+    }
+    
+    private static List<TripMatchResult> BuildValidTripMatches(
+        List<RouteEntity> routes,
+        List<StopEntity> closestStartStops,
+        List<StopEntity> closestEndStops,
+        Dictionary<StopEntity, int> startWalkingTimes,
+        Dictionary<StopEntity, int> endWalkingTimes,
+        int userDepartureTimeSeconds)
+    {
         var validRoutes = new List<TripMatchResult>();
-
+    
         foreach (var route in routes)
         {
             foreach (var trip in route.Trips)
             {
-                var matchedStartStop = trip.Stops
-                    .Where(s => closestStartStopsCandidates.Any(css =>
-                        css.Latitude == s.Latitude && css.Longitude == s.Longitude))
-                    .OrderBy(s => s.SequenceOrder)
-                    .FirstOrDefault();
-
-                var matchedEndStop = trip.Stops
-                    .Where(s => closestEndStopsCandidates.Any(ces =>
-                        ces.Latitude == s.Latitude && ces.Longitude == s.Longitude))
-                    .OrderByDescending(s => s.SequenceOrder)
-                    .FirstOrDefault();
-
-                if (matchedStartStop != null && matchedEndStop != null &&
-                    matchedStartStop.SequenceOrder < matchedEndStop.SequenceOrder)
-                {
-                    int walkTimeStartSeconds = startWalkingTimes.First(kvp =>
-                        kvp.Key.Latitude == matchedStartStop.Latitude &&
-                        kvp.Key.Longitude == matchedStartStop.Longitude).Value;
-
-                    int userArrivalAtStopSeconds = userDepartureTimeSeconds + walkTimeStartSeconds;
-
-                    if (matchedStartStop.ArrivalTime >= userArrivalAtStopSeconds)
-                    {
-                        int walkTimeEndSeconds = endWalkingTimes.First(kvp =>
-                            kvp.Key.Latitude == matchedEndStop.Latitude &&
-                            kvp.Key.Longitude == matchedEndStop.Longitude).Value;
-
-                        int transitTimeSeconds = matchedEndStop.ArrivalTime - matchedStartStop.ArrivalTime;
-
-                        int finalArrivalTimeSeconds = matchedEndStop.ArrivalTime + walkTimeEndSeconds;
-                        int totalTimeSeconds = finalArrivalTimeSeconds - userDepartureTimeSeconds;
-
-                        validRoutes.Add(new TripMatchResult
-                        {
-                            RouteId = route.RouteId,
-                            Trip = trip,
-                            StartStop = matchedStartStop,
-                            EndStop = matchedEndStop,
-                            StartWalkTimeSeconds = walkTimeStartSeconds,
-                            EndWalkTimeSeconds = walkTimeEndSeconds,
-                            TransitTimeSeconds = transitTimeSeconds,
-                            TotalTimeSeconds = totalTimeSeconds,
-                            FinalArrivalTimeSeconds = finalArrivalTimeSeconds
-                        });
-                    }
-                }
+                var match = TryBuildTripMatch(
+                    route, trip, closestStartStops, closestEndStops,
+                    startWalkingTimes, endWalkingTimes, userDepartureTimeSeconds);
+    
+                if (match != null)
+                    validRoutes.Add(match);
             }
         }
-
-        if (validRoutes.Count <= 0)
-            throw new HttpRequestException("No trips found", null, HttpStatusCode.NotFound);
-
-        return validRoutes
-            .OrderBy(r => r.FinalArrivalTimeSeconds)
-            .ToList();
     
-}
+        return validRoutes;
+    }
+    
+    private static TripMatchResult? TryBuildTripMatch(
+        RouteEntity route,
+        TripEntity trip,
+        List<StopEntity> closestStartStops,
+        List<StopEntity> closestEndStops,
+        Dictionary<StopEntity, int> startWalkingTimes,
+        Dictionary<StopEntity, int> endWalkingTimes,
+        int userDepartureTimeSeconds)
+    {
+        var matchedStartStop = FindMatchedStop(trip.Stops, closestStartStops, ascending: true);
+        var matchedEndStop = FindMatchedStop(trip.Stops, closestEndStops, ascending: false);
+    
+        if (matchedStartStop == null || matchedEndStop == null)
+            return null;
+    
+        if (matchedStartStop.SequenceOrder >= matchedEndStop.SequenceOrder)
+            return null;
+    
+        int walkTimeStartSeconds = startWalkingTimes[matchedStartStop];
+        int userArrivalAtStopSeconds = userDepartureTimeSeconds + walkTimeStartSeconds;
+    
+        if (matchedStartStop.ArrivalTime < userArrivalAtStopSeconds)
+            return null;
+    
+        int walkTimeEndSeconds = endWalkingTimes[matchedEndStop];
+        int transitTimeSeconds = matchedEndStop.ArrivalTime - matchedStartStop.ArrivalTime;
+        int finalArrivalTimeSeconds = matchedEndStop.ArrivalTime + walkTimeEndSeconds;
+        int totalTimeSeconds = finalArrivalTimeSeconds - userDepartureTimeSeconds;
+    
+        return new TripMatchResult
+        {
+            RouteId = route.RouteId,
+            Trip = trip,
+            StartStop = matchedStartStop,
+            EndStop = matchedEndStop,
+            StartWalkTimeSeconds = walkTimeStartSeconds,
+            EndWalkTimeSeconds = walkTimeEndSeconds,
+            TransitTimeSeconds = transitTimeSeconds,
+            TotalTimeSeconds = totalTimeSeconds,
+            FinalArrivalTimeSeconds = finalArrivalTimeSeconds
+        };
+    }
+    
+    private static StopEntity? FindMatchedStop(
+        IEnumerable<StopEntity> tripStops, List<StopEntity> candidates, bool ascending)
+    {
+        var candidateIds = candidates.Select(c => c.StopId).ToHashSet();
+        var query = tripStops.Where(s => candidateIds.Contains(s.StopId));
+    
+        return ascending
+            ? query.OrderBy(s => s.SequenceOrder).FirstOrDefault()
+            : query.OrderByDescending(s => s.SequenceOrder).FirstOrDefault();
+    }
+    
 }
